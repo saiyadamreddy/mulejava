@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:java="http://www.mulesoft.org/schema/mule/java"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config"
+		doc:name="HTTP Listener config"
+		doc:id="73ad5b38-578a-40f3-b4a4-dffa833dbd4f">
+		<http:listener-connection host="0.0.0.0"
+			port="8091" />
+	</http:listener-config>
+	<flow name="javamethodFlow1"
+		doc:id="ee377c64-d094-4348-af2b-0c7521338084">
+		<http:listener doc:name="Listener"
+			doc:id="f3b90dca-d3e8-425d-9ccd-833c24dfbf3b"
+			config-ref="HTTP_Listener_config" path="/staticmethod" />
+		<java:invoke-static doc:name="Invoke static"
+			doc:id="8ea33cde-ba7f-49ce-afb7-6470a8fc8be0"
+			class="com.java.sample.SampleJava" method="staticmethod()">
+		</java:invoke-static>
+		<logger level="INFO" doc:name="Logger"
+			doc:id="2cf775cf-04d4-4c6d-a81d-46b21963f5ce" message="#[payload]" />
+	</flow>
+	<flow name="javamethodFlow3"
+		doc:id="b4229692-c79b-4529-b5f2-6fb7c7ee9cc7">
+		<http:listener doc:name="Listener"
+			doc:id="323ea4c8-7339-43c3-afe2-44755b61717d"
+			config-ref="HTTP_Listener_config" path="/transformedjava" />
+		<ee:transform doc:name="Transform Message"
+			doc:id="9629dea0-e095-4e58-8fe3-07135ca1b822">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	data: java!com::java::sample::SampleJava::reverse()
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="javamethodFlow2"
+		doc:id="129051d6-a2fb-481b-87d9-76477a59ebcb">
+		<http:listener doc:name="Listener"
+			doc:id="de414f2f-08d6-4065-bccb-10408565a29c"
+			config-ref="HTTP_Listener_config" path="/nonstaticmethode" />
+		<java:new doc:name="New"
+			doc:id="d4ffe3ff-fd88-4038-80cb-1865abfd3cb6"
+			class="com.java.sample.SampleJava" target="obj"
+			constructor="SampleJava()">
+		</java:new>
+		<java:invoke doc:name="Invoke"
+			doc:id="27e369f3-0def-4d56-b59d-6e289f3bd439" instance="#[vars.obj]"
+			class="com.java.sample.SampleJava" method="nonStatic()" />
+		<logger level="INFO" doc:name="Logger"
+			doc:id="d2b6cb38-f7f6-412c-9506-f668c3d6a173" message="#[payload]" />
+	</flow>
+</mule>
